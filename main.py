@@ -65,10 +65,14 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     layer3_skip_conv = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 1)
     layer3_skip_connection = tf.add(layer4_upsample, layer3_skip_conv)
     layer3_upsample = tf.layers.conv2d_transpose(layer3_skip_connection, num_classes,
-                                                 16,8, 
+                                                 4,2, 
                                                  'SAME',
                                                  kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
-    return layer3_upsample
+    final_upsample = tf.layers.conv2d_transpose(layer3_upsample, num_classes,
+                                                 4,2, 
+                                                 'SAME',
+                                                 kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
+    return final_upsample
 tests.test_layers(layers)
 
 
@@ -113,8 +117,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             _, loss = sess.run([train_op, cross_entropy_loss], 
                                      feed_dict = {input_image: image, 
                                                   correct_label: label, 
-                                                  keep_prob: 0.80, 
-                                                  learning_rate: 0.00005})
+                                                  keep_prob: 0.60, 
+                                                  learning_rate: 0.005})
             print(count)
             if count % 2 == 0: 
                 print("Epoch {}/{}...".format(epoch, epochs),
@@ -128,8 +132,8 @@ def run():
     data_dir = './data'
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
-    batch_size = 2
-    epochs = 5
+    batch_size = 10
+    epochs = 10
 
     # Download pretrained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)

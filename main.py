@@ -50,19 +50,19 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :param num_classes: Number of classes to classify
     :return: The Tensor for the last layer of output
     """
-    fc_layer = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 1)
+    fc_layer = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 1, kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
     layer7_upsample = tf.layers.conv2d_transpose(fc_layer, 
                                                  num_classes,
                                                  4,2, 
                                                  'SAME',
                                                  kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
-    layer4_skip_conv = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 1)
+    layer4_skip_conv = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 1, kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
     layer4_skip_connection = tf.add(layer7_upsample, layer4_skip_conv)
     layer4_upsample = tf.layers.conv2d_transpose(layer4_skip_connection,num_classes,
                                                  4,2, 
                                                  'SAME',
                                                  kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
-    layer3_skip_conv = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 1)
+    layer3_skip_conv = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 1, kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
     layer3_skip_connection = tf.add(layer4_upsample, layer3_skip_conv)
     layer3_upsample = tf.layers.conv2d_transpose(layer3_skip_connection, num_classes,
                                                  16,8, 
@@ -113,8 +113,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             _, loss = sess.run([train_op, cross_entropy_loss], 
                                      feed_dict = {input_image: image, 
                                                   correct_label: label, 
-                                                  keep_prob: 0.60, 
-                                                  learning_rate: 0.005})
+                                                  keep_prob: 0.70, 
+                                                  learning_rate: 0.0005})
             print(count)
             if count % 2 == 0: 
                 print("Epoch {}/{}...".format(epoch, epochs),

@@ -24,16 +24,20 @@ def load_vgg(sess, vgg_path):
     :param vgg_path: Path to vgg folder, containing "variables/" and "saved_model.pb"
     :return: Tuple of Tensors from VGG model (image_input, keep_prob, layer3_out, layer4_out, layer7_out)
     """
-    # TODO: Implement function
-    #   Use tf.saved_model.loader.load to load the model and weights
     vgg_tag = 'vgg16'
+    tf.saved_model.loader.load(sess, [vgg_tag], vgg_path)
     vgg_input_tensor_name = 'image_input:0'
     vgg_keep_prob_tensor_name = 'keep_prob:0'
     vgg_layer3_out_tensor_name = 'layer3_out:0'
     vgg_layer4_out_tensor_name = 'layer4_out:0'
     vgg_layer7_out_tensor_name = 'layer7_out:0'
     
-    return None, None, None, None, None
+    input_tensor = sess.graph.get_tensor_by_name(vgg_input_tensor_name)
+    keep_prob = sess.graph.get_tensor_by_name(vgg_keep_prob_tensor_name)
+    layer3 = sess.graph.get_tensor_by_name(vgg_layer3_out_tensor_name)
+    layer4 = sess.graph.get_tensor_by_name(vgg_layer4_out_tensor_name)
+    layer7 = sess.graph.get_tensor_by_name(vgg_layer7_out_tensor_name)
+    return input_tensor, keep_prob, layer3, layer4, layer7
 tests.test_load_vgg(load_vgg, tf)
 
 
@@ -46,8 +50,25 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :param num_classes: Number of classes to classify
     :return: The Tensor for the last layer of output
     """
-    # TODO: Implement function
-    return None
+    fc_layer = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 1)
+    layer7_upsample = tf.layers.conv2d_transpose(fc_layer, 
+                                                 num_classes,
+                                                 4,2, 
+                                                 'SAME',
+                                                 kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
+    layer4_skip_conv = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 1)
+    layer4_skip_connection = tf.add(layer7_upsample, layer4_skip_conv)
+    layer4_upsample = tf.layers.conv2d_transpose(layer4_skip_connection,num_classes,
+                                                 4,2, 
+                                                 'SAME',
+                                                 kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
+    layer3_skip_conv = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 1)
+    layer3_skip_connection = tf.add(layer4_upsample, layer3_skip_conv)
+    layer3_upsample = tf.layers.conv2d_transpose(layer3_skip_connection, num_classes,
+                                                 4,2, 
+                                                 'SAME',
+                                                 kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
+    return layer3_upsample
 tests.test_layers(layers)
 
 

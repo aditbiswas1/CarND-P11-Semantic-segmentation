@@ -30,3 +30,20 @@ python main.py
  - `main.py`
  - `project_tests.py`
  - Newest inference images from `runs` folder
+
+### Sample images from the latest run
+![png](um_000006.png)
+![png](um_000031.png)
+![png](um_000060.png)
+![png](umm_000042.png)
+![png](uu_000010.png)
+![png](um_000012.png)
+![png](um_000032.png)
+![png](um_000085.png)
+![png](umm_000054.png)
+![png](uu_000011.png)
+![png](um_000028.png)
+![png](um_000051.png)
+![png](umm_000017.png)
+![png](umm_000078.png)
+![png](uu_000096.pn)g

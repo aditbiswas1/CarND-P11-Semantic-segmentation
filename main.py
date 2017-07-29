@@ -53,19 +53,19 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     fc_layer = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 1)
     layer7_upsample = tf.layers.conv2d_transpose(fc_layer, 
                                                  num_classes,
-                                                 8,4, 
+                                                 4,2, 
                                                  'SAME',
                                                  kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
     layer4_skip_conv = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 1)
     layer4_skip_connection = tf.add(layer7_upsample, layer4_skip_conv)
     layer4_upsample = tf.layers.conv2d_transpose(layer4_skip_connection,num_classes,
-                                                 8,4, 
+                                                 4,2, 
                                                  'SAME',
                                                  kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
     layer3_skip_conv = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 1)
     layer3_skip_connection = tf.add(layer4_upsample, layer3_skip_conv)
     layer3_upsample = tf.layers.conv2d_transpose(layer3_skip_connection, num_classes,
-                                                 8,4, 
+                                                 16,8, 
                                                  'SAME',
                                                  kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
     return layer3_upsample

@@ -81,8 +81,14 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :param num_classes: Number of classes to classify
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
-    # TODO: Implement function
-    return None, None, None
+    logits = tf.reshape(nn_last_layer, (-1, num_classes))
+    
+    labels = tf.reshape(correct_label, (-1, num_classes))
+    
+    cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits,labels=labels))
+    train_op = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
+    
+    return logits, train_op, cross_entropy_loss
 tests.test_optimize(optimize)
 
 
@@ -101,8 +107,18 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
-    # TODO: Implement function
-    pass
+    count = 0
+    for epoch in range(epochs):
+        for input_image, correct_label in get_batches_fn(batch_size):
+            _, loss = sess.run([train_op, cross_entropy_loss], 
+                                     feed_dict = {input_image: input_image, 
+                                                  correct_label: correct_label, 
+                                                  keep_prob: 0.80, 
+                                                  learning_rate: 0.00005})
+            print(count)
+            if count % 2 == 0: 
+                print("Epoch {}/{}...".format(epoch, epochs),
+                      "Training Loss: {:.4f}...".format(loss))
 tests.test_train_nn(train_nn)
 
 
@@ -112,6 +128,8 @@ def run():
     data_dir = './data'
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
+    batch_size = 2
+    epochs = 5
 
     # Download pretrained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
@@ -130,12 +148,26 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # TODO: Build NN using load_vgg, layers, and optimize function
+        vgg_path = './data/vgg'
+        image_input, keep_prob, layer3_out, layer4_out, layer7_out = load_vgg(sess, vgg_path)
+        
+        output_layer = layers(layer3_out, layer4_out, layer7_out, num_classes)
+        
+        learning_rate = tf.placeholder(dtype = tf.float32)
+        correct_label = tf.placeholder(dtype = tf.float32, shape = (None, None, None, num_classes))
+        
+        reshaped_logits, train_op, cross_entropy_loss = optimize(output_layer, correct_label, learning_rate, num_classes)
+        
+        
 
         # TODO: Train NN using the train_nn function
+        sess.run(tf.global_variables_initializer())
+        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, 
+                 image_input, correct_label, keep_prob, learning_rate)
 
         # TODO: Save inference data using helper.save_inference_samples
-        #  helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
-
+        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, reshaped_logits, keep_prob, image_input)
+        
         # OPTIONAL: Apply the trained model to a video
 
 

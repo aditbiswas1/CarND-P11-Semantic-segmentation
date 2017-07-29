@@ -65,14 +65,10 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     layer3_skip_conv = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 1)
     layer3_skip_connection = tf.add(layer4_upsample, layer3_skip_conv)
     layer3_upsample = tf.layers.conv2d_transpose(layer3_skip_connection, num_classes,
-                                                 4,2, 
+                                                 16,8, 
                                                  'SAME',
                                                  kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
-    final_upsample = tf.layers.conv2d_transpose(layer3_upsample, num_classes,
-                                                 4,2, 
-                                                 'SAME',
-                                                 kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
-    return final_upsample
+    return layer3_upsample
 tests.test_layers(layers)
 
 

@@ -165,11 +165,16 @@ def run():
         train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, 
                  image_input, correct_label, keep_prob, learning_rate)
 
+        
+        # OPTIONAL: Apply the trained model to a video
+        # save the model for optimization
+        saver0 = tf.train.Saver()
+        saver0.save(sess, 'model/final.ckpt')
+        saver0.export_meta_graph('model/final.meta')
+
         # TODO: Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, reshaped_logits, keep_prob, image_input)
         
-        # OPTIONAL: Apply the trained model to a video
-
 
 if __name__ == '__main__':
     run()
